@@ -7,8 +7,8 @@ https://www.docker.com/products/docker-desktop/
 ```
 - Choose the correct download file depending on your **CPU**
 - You can check which type of CPU you have by going to the top left of your screen and clicking the '**about**' on your mac book
-```
 ##  Test ROS2 Docker
+
 ```
 docker run -it --rm \
   --net=host \
