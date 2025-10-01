@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y \
     neovim \
     ripgrep \
     nano \
+    tmux \
     software-properties-common && \
     add-apt-repository -y ppa:zhangsongcui3371/fastfetch && \
     apt-get update && apt-get install -y fastfetch && \
