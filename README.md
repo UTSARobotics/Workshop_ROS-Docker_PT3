@@ -33,30 +33,4 @@ docker run -it --rm \
   utsarobotics/ros2-humble:1.0.0 \
   bash
 ```
-## Create a ROS2 container (same as previous command but without "--rm")
-```
-docker run -it \
-  --name ros2-container \
-  --net=host \
-  -e DISPLAY=$DISPLAY \
-  -e QT_QPA_PLATFORM=xcb \
-  -v /tmp/.X11-unix:/tmp/.X11-unix \
-  utsarobotics/ros2-humble:1.0.0 \
-  bash
-```
-##  Create a Docker Network
-```
-Docker network create ros2-net
-```
-##  Create a Docker container connected to the docker network
-```
-docker run -it \
-  --rm \
-  --net=ros2-net \
-  -e DISPLAY=$DISPLAY \
-  -e QT_QPA_PLATFORM=xcb \
-  -v /tmp/.X11-unix:/tmp/.X11-unix \
-  utsarobotics/ros2-humble:1.0.0 \
-  bash
-```
 
