@@ -53,13 +53,7 @@ docker network create ros2-network
 ```
 -  Run Docker Container
 ```bash
-docker run -it --rm ^
-  --network ros2-net ^
-  --device /dev/ttyS4:/dev/ttyACM0 ^
-  --shm-size=512m ^
-  -v /mnt/c/Users/<YourName>/ros2_ws:/root/ros2_ws ^
-  utsarobotics/ros2-humble:1.1.0 ^
-  bash
+docker run -it --rm --network ros2-net --device /dev/ttyS4:/dev/ttyACM0 --shm-size=512m -v /mnt/c/Users/<YourName>/ros2_ws:/root/ros2_ws utsarobotics/ros2-humble:1.1.0 bash
 ```
 
 
@@ -88,56 +82,31 @@ nano /root/ros2_ws/src/led_controller/led_controller/led_serial_node.py
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-import sys
-import termios
-import tty
-import select
+import serial
 
-class LEDKeyboardPublisher(Node):
+class LEDSerialNode(Node):
     def __init__(self):
-        super().__init__('led_keyboard_publisher')
-        self.publisher = self.create_publisher(String, 'led_command', 10)
-        self.get_logger().info("Press '1' to turn LED ON, '2' to turn LED OFF, 'q' to quit.")
+        super().__init__('led_serial_node')
+        self.subscription = self.create_subscription(String, 'led_command', self.listener_callback, 10)
+        self.serial = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
+        self.get_logger().info("Connected to Arduino on /dev/ttyACM0")
 
-    def get_key(self):
-        fd = sys.stdin.fileno()
-        old_settings = termios.tcgetattr(fd)
-        try:
-            tty.setraw(fd)
-            rlist, _, _ = select.select([sys.stdin], [], [], 0.1)
-            if rlist:
-                key = sys.stdin.read(1)
-            else:
-                key = None
-        finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-        return key
-
-    def run(self):
-        while rclpy.ok():
-            key = self.get_key()
-            if key == '1':
-                msg = String()
-                msg.data = 'on'
-                self.publisher.publish(msg)
-                self.get_logger().info("🔆 LED ON command sent")
-            elif key == '2':
-                msg = String()
-                msg.data = 'off'
-                self.publisher.publish(msg)
-                self.get_logger().info("🌑 LED OFF command sent")
-            elif key == 'q':
-                self.get_logger().info("Exiting keyboard control...")
-                break
+    def listener_callback(self, msg):
+        cmd = msg.data.strip().lower()
+        if cmd in ['on', 'off']:
+            self.serial.write((cmd + '\n').encode())
+            self.get_logger().info(f"Sent to Arduino: {cmd}")
+        else:
+            self.get_logger().warn(f"Ignored invalid command: {cmd}")
 
 def main(args=None):
     rclpy.init(args=args)
-    node = LEDKeyboardPublisher()
-    node.run()
+    node = LEDSerialNode()
+    rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
 ```
 
