@@ -1,7 +1,7 @@
-# Docker on UNIX
+# Docker on Windows 
 
 ### Install Arduino IDE
-```
+```web
 https://www.arduino.cc/en/software/
 ```
 - Choose the correct download file depending on your **CPU**
@@ -31,6 +31,21 @@ void loop() {
   }
 }
 ```
+
+- Make a directory for ROS2
+```bash
+mkdir C:\ros2_led_project
+cd C:\ros2_led_project
+```
+
+- check what port your arduino is located
+  - Open "Device Manager" and look for what "COM" port the arduino is connected to
+
+- Check if we can see the arduino port (connect the arduino to your computer[might have to run next command in wsl])
+```bash
+wsl ls /dev/tty*
+```
+---
 ### Docker section
 - Create a docker network
 ```bash
@@ -38,18 +53,17 @@ docker network create ros2-network
 ```
 -  Run Docker Container
 ```bash
-docker run -it --rm \
-  --network ros2-net \
-  --device /dev/ttyACM0:/dev/ttyACM0 \
-  --group-add dialout \
-  --shm-size=512m \
-  -e DISPLAY=$DISPLAY \
-  -e QT_X11_NO_MITSHM=1 \
-  -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
-  -v ~/ros2_ws:/root/ros2_ws \
-  utsarobotics/ros2-humble:1.1.0 \
+docker run -it --rm ^
+  --network ros2-net ^
+  --device /dev/ttyS4:/dev/ttyACM0 ^
+  --shm-size=512m ^
+  -v /mnt/c/Users/<YourName>/ros2_ws:/root/ros2_ws ^
+  utsarobotics/ros2-humble:1.1.0 ^
   bash
 ```
+
+
+
 
 - Move into the ros-workspace directory
 ```bash
@@ -202,7 +216,7 @@ colcon build
 source install/setup.bash
 ```
 
-- Then run the first listening node on the current terminal
+- Then run the first lisening node on the current terminal
 ```bash
 source /root/ros2_ws/install/setup.bash
 ros2 run led_controller led_serial_node
@@ -212,17 +226,15 @@ ros2 run led_controller led_serial_node
 
 - Open another terminal and run the docker container again
 ```bash
-docker run -it --rm \
-  --network ros2-net \
-  --device /dev/ttyACM0:/dev/ttyACM0 \
-  --group-add dialout \
-  --shm-size=512m \
-  -e DISPLAY=$DISPLAY \
-  -e QT_X11_NO_MITSHM=1 \
-  -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
-  -v ~/ros2_ws:/root/ros2_ws \
-  utsarobotics/ros2-humble:1.1.0 \
+
+docker run -it --rm ^
+  --network ros2-net ^
+  --device /dev/ttyS4:/dev/ttyACM0 ^
+  --shm-size=512m ^
+  -v /mnt/c/Users/<YourName>/ros2_ws:/root/ros2_ws ^
+  utsarobotics/ros2-humble:1.1.0 ^
   bash
+
 ```
 
 - Run the second node we made to manage the LED
@@ -231,9 +243,7 @@ source /root/ros2_ws/install/setup.bash
 ros2 run led_controller led_keyboard_publisher
 ```
 
-
-
-
+---
 
 ##  Servo Control
 
@@ -388,16 +398,12 @@ ros2 run servo_controller servo_publisher
 
 - Open a new Docker container terminal
 ```bash
-docker run -it --rm \
-  --network ros2-net \
-  --device /dev/ttyACM0:/dev/ttyACM0 \
-  --group-add dialout \
-  --shm-size=512m \
-  -e DISPLAY=$DISPLAY \
-  -e QT_X11_NO_MITSHM=1 \
-  -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
-  -v ~/ros2_ws:/root/ros2_ws \
-  utsarobotics/ros2-humble:1.1.0 \
+docker run -it --rm ^
+  --network ros2-net ^
+  --device /dev/ttyS4:/dev/ttyACM0 ^
+  --shm-size=512m ^
+  -v /mnt/c/Users/<YourName>/ros2_ws:/root/ros2_ws ^
+  utsarobotics/ros2-humble:1.1.0 ^
   bash
 ```
 
