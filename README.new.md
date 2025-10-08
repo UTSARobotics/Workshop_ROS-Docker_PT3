@@ -8,7 +8,7 @@ https://www.arduino.cc/en/software/
 - You can check which type of CPU you have by going to the top left of your screen and clicking the '**about**' on your mac book
 
 ### Upload arduino code
-```cpp
+```c
 int ledPin = 13; // or whatever pin you’re using
 String cmd = "";
 
@@ -202,7 +202,7 @@ colcon build
 source install/setup.bash
 ```
 
-- Then run the first lisening node on the current terminal
+- Then run the first listening node on the current terminal
 ```bash
 source /root/ros2_ws/install/setup.bash
 ros2 run led_controller led_serial_node
@@ -229,4 +229,179 @@ docker run -it --rm \
 ```bash
 source /root/ros2_ws/install/setup.bash
 ros2 run led_controller led_keyboard_publisher
+```
+
+
+
+
+
+##  Servo Control
+
+- upload this servo arduino code into your arduino
+```c
+#include <Servo.h>
+
+Servo servo;
+int servoPin = 9;  // Change as needed
+int pos = 0;
+
+void setup() {
+  Serial.begin(9600);
+  servo.attach(servoPin);
+  servo.write(90);
+}
+
+void loop() {
+  if (Serial.available()) {
+    int angle = Serial.parseInt();
+    if (angle >= 0 && angle <= 180) {
+      servo.write(angle);
+      Serial.print("Moved to: ");
+      Serial.println(angle);
+    }
+  }
+}
+```
+
+- Inside the Docker Container go into this directory
+```bash
+source /opt/ros/humble/setup.bash
+cd /root/ros2_ws
+mkdir -p src
+cd src
+```
+- Create a new node package for ROS2
+```bash
+ros2 pkg create --build-type ament_python servo_controller
+```
+
+- Create a servo_publisher.py node
+```bash
+nano /root/ros2_ws/src/servo_controller/servo_controller/servo_publisher.py
+```
+- Paste this python code into the servo_publisher.py file
+```python
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import Float64
+
+class ServoPublisher(Node):
+    def __init__(self):
+        super().__init__('servo_publisher')
+        self.publisher = self.create_publisher(Float64, 'servo_angle', 10)
+        self.angle = 0
+        self.create_timer(1.0, self.timer_callback)
+
+    def timer_callback(self):
+        msg = Float64()
+        msg.data = float(self.angle)
+        self.publisher.publish(msg)
+        self.get_logger().info(f'Publishing: {self.angle}')
+        self.angle = (self.angle + 10) % 180
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = ServoPublisher()
+    rclpy.spin(node)
+    node.destroy_node()
+    rclpy.shutdown()
+```
+
+- Create a servo_node.py node
+```bash
+nano /root/ros2_ws/src/servo_controller/servo_controller/servo_node.py
+```
+
+- Paste this python code into the servo_node.py file
+```python
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import Float64
+import serial
+
+class ServoNode(Node):
+    def __init__(self):
+        super().__init__('servo_node')
+        self.subscription = self.create_subscription(
+            Float64,
+            'servo_angle',
+            self.listener_callback,
+            10)
+        self.serial = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
+        self.get_logger().info("Connected to Arduino on /dev/ttyACM0")
+
+    def listener_callback(self, msg):
+        angle = int(msg.data)
+        self.serial.write(f"{angle}\n".encode())
+        self.get_logger().info(f"Sent angle: {angle}")
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = ServoNode()
+    rclpy.spin(node)
+    node.destroy_node()
+    rclpy.shutdown()
+```
+
+- Edit the setup.py file to include the 2 new nodes
+```bash
+nano /root/ros2_ws/src/servo_controller/setup.py
+```
+
+- Replace the setup.py code with this None
+```python
+from setuptools import setup
+
+package_name = 'servo_controller'
+
+setup(
+    name=package_name,
+    version='0.0.1',
+    packages=[package_name],
+    install_requires=['setuptools'],
+    zip_safe=True,
+    maintainer='your_name',
+    maintainer_email='your_email@example.com',
+    description='Servo control via Arduino over ROS 2',
+    license='MIT',
+    entry_points={
+        'console_scripts': [
+            'servo_publisher = servo_controller.servo_publisher:main',
+            'servo_node = servo_controller.servo_node:main',
+        ],
+    },
+)
+```
+
+- Build the ros-workspace
+```bash
+cd /root/ros2_ws
+source /opt/ros/humble/setup.bash
+colcon build
+source install/setup.bash
+```
+
+- Run the first listening node
+```bash
+ros2 run servo_controller servo_publisher
+```
+
+- Open a new Docker container terminal
+```bash
+docker run -it --rm \
+  --network ros2-net \
+  --device /dev/ttyACM0:/dev/ttyACM0 \
+  --group-add dialout \
+  --shm-size=512m \
+  -e DISPLAY=$DISPLAY \
+  -e QT_X11_NO_MITSHM=1 \
+  -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+  -v ~/ros2_ws:/root/ros2_ws \
+  utsarobotics/ros2-humble:1.1.0 \
+  bash
+```
+
+-- Run the Second Servo angle node
+```bash
+ros2 run servo_controller servo_node
 ```
