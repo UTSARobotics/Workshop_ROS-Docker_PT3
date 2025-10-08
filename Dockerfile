@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y \
     ripgrep \
     nano \
     tmux \
+    usbutils \
     python3-serial \
     python3-colcon-common-extensions \
     python3-rosdep \
