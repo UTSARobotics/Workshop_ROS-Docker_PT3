@@ -175,7 +175,7 @@ if __name__ == '__main__':
 
 - Edit the python setup.py code to include the 2 new nodes
 ```bash
-nano /root/ros2_ws/srcled_controller/setup.py
+nano /root/ros2_ws/src/led_controller/setup.py
 ```
 
 - Replace the Setup code with this code
