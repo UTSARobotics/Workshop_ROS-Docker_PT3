@@ -19,6 +19,12 @@ RUN apt-get update && apt-get install -y \
     ripgrep \
     nano \
     tmux \
+    python3-serial \
+    python3-colcon-common-extensions \
+    python3-rosdep \
+    python3-pip \
+    git \
+    build-essential \
     software-properties-common && \
     add-apt-repository -y ppa:zhangsongcui3371/fastfetch && \
     apt-get update && apt-get install -y fastfetch && \
@@ -33,6 +39,20 @@ RUN mkdir -p /root/.config/fastfetch
 COPY ./fastfetch/config.jsonc /root/.config/fastfetch/config.jsonc
 COPY ./fastfetch/RAS-ascii-art.ans /root/.config/fastfetch/RAS-ascii-art.ans
 
+#  Workspace setup 
+WORKDIR /root/ros2_ws
+RUN mkdir -p src
+
+
+# Pre-source ROS when building workspace
+RUN bash -c "source /opt/ros/humble/setup.bash && colcon build || true"
+
+# Automatically source your workspace at container start
+RUN echo '[ -f /root/ros2_ws/install/setup.bash ] && source /root/ros2_ws/install/setup.bash' >> /root/.bashrc
+
+# Source workspace on start
 WORKDIR /home
 COPY . .
 
+# Default shell
+CMD ["bash"]
