@@ -196,7 +196,7 @@ setup(
     license='MIT',
     entry_points={
         'console_scripts': [
-            'led_publisher = led_controller.led_publisher:main',
+            'led_serial_node = led_controller.led_serial_node:main',
             'led_keyboard_publisher = led_controller.led_keyboard_publisher:main',
         ],
     },
