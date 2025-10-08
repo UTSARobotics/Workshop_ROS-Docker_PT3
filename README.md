@@ -79,8 +79,6 @@ nano /root/ros2_ws/src/led_controller/led_controller/led_serial_node.py
 
 - Paste this python code into the file
 ```python
-
-# led_controller/led_controller/led_serial_node.py
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
@@ -89,7 +87,8 @@ import serial
 class LEDSerialNode(Node):
     def __init__(self):
         super().__init__('led_serial_node')
-        self.subscription = self.create_subscription(String, 'led_command', self.listener_callback, 10)
+        self.subscription = self.create_subscription(
+            String, 'led_command', self.listener_callback, 10)
         self.serial = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
         self.get_logger().info("Connected to Arduino on /dev/ttyACM0")
 
@@ -108,6 +107,8 @@ def main(args=None):
     node.destroy_node()
     rclpy.shutdown()
 
+if __name__ == '__main__':
+    main()
 ```
 
 - Create a different node for controlling the LED signal
