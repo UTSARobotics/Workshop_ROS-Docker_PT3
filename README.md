@@ -45,15 +45,35 @@ cd C:\ros2_led_project
 ```bash
 wsl ls /dev/tty*
 ```
+- Open a Terminal through administrator and install this package
+```bash
+winget install --exact dorssel.usbipd-win
+```
+
+- List usb ports (make sure arduino is connected to computer)
+```bash
+usbipd list
+```
+
+- bind arduino port
+```bash
+usbipd bind --busid {range of the ardunio port}
+```
+
+- Attach arduino port to wsl
+```bash
+usbipd attach --busid --wsl {range of the ardunio port}
+```
+
 ---
 ### Docker section
 - Create a docker network
 ```bash
-docker network create ros2-network
+docker network create ros2-net
 ```
 -  Run Docker Container
 ```bash
-docker run -it --rm --network ros2-net --device /dev/ttyS4:/dev/ttyACM0 --shm-size=512m -v /mnt/c/Users/<YourName>/ros2_ws:/root/ros2_ws utsarobotics/ros2-humble:1.1.0 bash
+docker run -it --rm --network ros2-net --device=/dev/ttyACM0:/dev/ttyACM0 --privileged --shm-size=512m -v C:/ros2_led_project:/root/ros2_ws utsarobotics/ros2-humble:1.2.0 bash
 ```
 
 
