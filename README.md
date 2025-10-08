@@ -1,4 +1,4 @@
-# Docker on UNIX
+# Docker on MacOS
 
 ### Install Arduino IDE
 ```
@@ -8,7 +8,7 @@ https://www.arduino.cc/en/software/
 - You can check which type of CPU you have by going to the top left of your screen and clicking the '**about**' on your mac book
 
 ### Upload arduino code
-```cpp
+```c
 int ledPin = 13; // or whatever pin you’re using
 String cmd = "";
 
@@ -31,6 +31,23 @@ void loop() {
   }
 }
 ```
+
+- Create a root folder for your ros-workspace to later mount to the docker container
+```bash
+mkdir -p ~/ros2_ws/src
+```
+
+- Install xquartz 
+```
+https://www.xquartz.org/
+```
+
+- Then run 
+```bash
+xhost +localhost
+export DISPLAY=host.docker.internal:0
+```
+---
 ### Docker section
 - Create a docker network
 ```bash
