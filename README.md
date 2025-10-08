@@ -77,8 +77,6 @@ docker run -it --rm --network ros2-net --device=/dev/ttyACM0:/dev/ttyACM0 --priv
 ```
 
 
-
-
 - Move into the ros-workspace directory
 ```bash
 cd /root/ros2_ws
@@ -243,14 +241,7 @@ ros2 run led_controller led_serial_node
 - Open another terminal and run the docker container again
 ```bash
 
-docker run -it --rm ^
-  --network ros2-net ^
-  --device /dev/ttyS4:/dev/ttyACM0 ^
-  --shm-size=512m ^
-  -v /mnt/c/Users/<YourName>/ros2_ws:/root/ros2_ws ^
-  utsarobotics/ros2-humble:1.1.0 ^
-  bash
-
+docker run -it --rm --network ros2-net --device=/dev/ttyACM0:/dev/ttyACM0 --privileged --shm-size=512m -v C:/ros2_led_project:/root/ros2_ws utsarobotics/ros2-humble:1.2.0 bash
 ```
 
 - Run the second node we made to manage the LED
